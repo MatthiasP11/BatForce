@@ -28,10 +28,16 @@ def read_total_waste(comune: str, anno: int):
     else:
         return JSONResponse(status_code=404, content={"message": "Data not found for the provided Comune and Anno."})
 
-@app.get('/csv_show')
-def read_and_return_csv():
-    aux = df['Age'].values
-    return{"Age": str(aux.argmin())}
+@app.get("/total_waste_sum")
+def read_total_waste_sum(comune: str):
+    """
+    Endpoint to get the sum of all "Rifiuto totale (in Kg)" for a given "Comune" across all years.
+    """
+    data = df[df['Comune'] == comune]
+    if not data.empty:
+        return {"Rifiuto totale (in Kg) sum": data["Rifiuto totale (in Kg)"].sum()}
+    else:
+        return JSONResponse(status_code=404, content={"message": "Data not found for the provided Comune."})
 
 @app.get('/')
 def read_root():
