@@ -16,16 +16,17 @@ from .mymodules.birthdays import return_birthday, print_birthdays_str
 
 app = FastAPI()
 
-# Dictionary of birthdays
-birthdays_dictionary = {
-    'Albert Einstein': '03/14/1879',
-    'Benjamin Franklin': '01/17/1706',
-    'Ada Lovelace': '12/10/1815',
-    'Donald Trump': '06/14/1946',
-    'Rowan Atkinson': '01/6/1955'
-}
-
-df = pd.read_csv('/app/app/employees.csv')
+df = pd.read_csv('/app/app/filedati.csv', encoding= "latin-1")
+@app.get("/total_waste")
+def read_total_waste(comune: str, anno: int):
+    """
+    Endpoint to get the total waste for a given "Comune" and "Anno".
+    """
+    data = df[(df['Comune'] == comune) & (df['Anno'] == anno)]
+    if not data.empty:
+        return {"Rifiuto totale (in Kg)": data["Rifiuto totale (in Kg)"].sum()}
+    else:
+        return JSONResponse(status_code=404, content={"message": "Data not found for the provided Comune and Anno."})
 
 @app.get('/csv_show')
 def read_and_return_csv():
