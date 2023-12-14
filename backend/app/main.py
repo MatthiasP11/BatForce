@@ -49,6 +49,16 @@ def read_root():
     """
     return {"Hello": "World"}
 
+@app.get('/get-date')
+def get_date():
+    """
+    Endpoint to get the current date.
+
+    Returns:
+        dict: Current date in ISO format.
+    """
+    current_date = datetime.now().isoformat()
+    return JSONResponse(content={"date": current_date})
 
 @app.get('/query/{person_name}')
 def read_item(person_name: str):
