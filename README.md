@@ -14,8 +14,7 @@ The project follows a simple client-server architecture:
 2. **Backend (FastAPI):**
    - Represents the server or backend of the application.
    - Built with FastAPI, a modern web framework for building APIs with Python.
-   - Handles requests from the frontend, including querying birthdays and providing the current date.
-
+   - Handles requests from the frontend, including querying the towns and years for the waste production.
 3. **Docker Compose:**
    - Orchestrates the deployment of both frontend and backend as separate containers.
    - Ensures seamless communication between frontend and backend containers.
