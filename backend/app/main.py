@@ -10,14 +10,14 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from datetime import datetime
 import pandas as pd
-
+    
 
 
 
 app = FastAPI()
 
 # Load the new CSV data
-df = pd.read_csv('/app/app/filedati.csv', encoding= "latin-1")
+df = pd.read_csv('/app/app/filedati.csv', encoding= "latin-1", sep=";")
 @app.get("/total_waste")
 def read_total_waste(comune: str, anno: int):
     """
@@ -63,3 +63,6 @@ def get_date():
     current_date = datetime.now().isoformat()
     return JSONResponse(content={"date": current_date})
 
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

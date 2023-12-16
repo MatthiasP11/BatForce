@@ -14,8 +14,8 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'my_secret_key'  # Replace with a secure secret key
 
 # Configuration for the FastAPI backend URL
-FASTAPI_BACKEND_HOST = 'http://127.0.0.1:8000'  # Replace with the actual URL of your FastAPI backend
-BACKEND_URL = f'{FASTAPI_BACKEND_HOST}/query/'
+FASTAPI_BACKEND_HOST = 'http://backend:80'  # Replace with the actual URL of your FastAPI backend
+BACKEND_URL = f'{FASTAPI_BACKEND_HOST}/'
 
 
 class QueryForm(FlaskForm):
@@ -37,16 +37,10 @@ def index():
     return render_template('index.html', date_from_backend=date_from_backend)
 
 def fetch_date_from_backend():
-    """
-    Function to fetch the current date from the backend.
-
-    Returns:
-        str: Current date in ISO format.
-    """
-    backend_url = 'http://backend/get-date'  # Adjust the URL based on your backend configuration
+    backend_url = f'{BACKEND_URL}get-date'  # Updated URL
     try:
         response = requests.get(backend_url)
-        response.raise_for_status()  # Raise an HTTPError for bad responses
+        response.raise_for_status()
         return response.json().get('date', 'Date not available')
     except requests.exceptions.RequestException as e:
         print(f"Error fetching date from backend: {e}")
@@ -72,4 +66,4 @@ def internal():
 
   
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5001)
