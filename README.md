@@ -1,9 +1,6 @@
-# swdevel-lab-hfarm
- Skeleton Project for the Lab of Software Project Development
+# Waste Quantification in Italian Towns
 
-# Flask and FastAPI Dockerized Project
-
-This project demonstrates a simple web application using Flask as the frontend and FastAPI as the backend. The frontend allows querying birthdays from the backend using a form. The project is Dockerized for easy deployment.
+This project is designed to quantify waste in specified towns in Italy over various years. It features a FastAPI backend for data processing and a Flask frontend for user interaction, both containerized using Docker.
 
 ## Architecture
 
@@ -43,16 +40,17 @@ Bidirectional communication is established between the Frontend (Flask) and Back
 
 ## Prerequisites
 
-- Docker
-- Visual Studio Code (Optional, for debugging)
+- Python 3.8+
+- Docker (for containerization)
+- FastAPI, Flask, and additional Python libraries listed in requirements.txt
 
 ## Usage
 
 1. Clone the repository and navigate in the directory:
 
     ```bash
-    git clone REPO_URL
-    cd swdevel-lab-hfarm
+    git clone Repository_URL
+    cd BatForce
     ```
 
 2. Build and run the Docker containers:
@@ -62,12 +60,10 @@ Bidirectional communication is established between the Frontend (Flask) and Back
     ```
 
     This will start both the frontend and backend containers.
-    
-> **NOTE:** Uncomment the lines in the Dockerfiles that follow the section labeled `Command to run the application` and comment out the ones labeled `Command to keep the container running`. This will allow you to access the backend and frontend, as described in Point 3.
 
 3. Open your web browser and navigate to [http://localhost:8080](http://localhost:8080) to access the `frontend` and [http://localhost:8081](http://localhost:8081) to access the `backend`.
 
-4. Use the form on the frontend to query birthdays from the backend.
+4. Use the form on the frontend to query the name of the town and the year from the backend.
 
 ## Shutting Down the Docker Containers
 
@@ -189,3 +185,19 @@ Now you can manage the lifecycle of your Docker containers more flexibly.
 
 
 Now, the additional Python modules are installed in the running container, and you've performed these actions directly from the VS Code terminal. If these changes are intended for production, consider updating the `requirements.txt` file and rebuilding the Docker container.
+
+### Features
+Data Processing: Analyze waste data from CSV files using Pandas in the FastAPI backend.
+User Interface: Interactive web interface created with Flask for querying and displaying data.
+Docker Support: Containerized setup for easy deployment and scaling.
+
+### Usage
+The Flask frontend provides a web interface to interact with the FastAPI backend.
+Users can query birthday information and view waste data analytics.
+
+### Contributing
+Contributions are welcome. Please read the contribution guidelines before submitting pull requests.
+
+### License
+This project is licensed under the MIT License - see the LICENSE.md file for details.
+
