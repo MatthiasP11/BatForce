@@ -22,19 +22,19 @@
             <button type="submit" class="btn btn-primary">Get Waste Data</button>
         </form>
 
-          
-    
-
-        <!-- Display the result here -->
+        <!-- Display the results here -->
         <div id="resultContainer" class="mt-3">
-            {% if result %}
-                <p>{{ result }}</p>
+            {% if total_waste %}
+                <p>Total Waste: {{ total_waste }}</p>
+            {% endif %}
+            {% if total_waste_sum %}
+                <p>Total Waste Sum: {{ total_waste_sum }}</p>
             {% endif %}
             {% if error_message %}
                 <p class="text-danger">{{ error_message }}</p>
             {% endif %}
         </div>
-        
+    
 
     </div>
 

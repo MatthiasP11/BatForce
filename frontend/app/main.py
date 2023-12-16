@@ -21,7 +21,7 @@ BACKEND_URL = f'{FASTAPI_BACKEND_HOST}/'
 class QueryForm(FlaskForm):
     comune = StringField('Comune', validators=[DataRequired()])
     anno = IntegerField('Anno', validators=[DataRequired()])
-    submit = SubmitField('Get Birthday from FastAPI Backend')
+    
 
 
 @app.route('/')
@@ -51,6 +51,7 @@ def fetch_date_from_backend():
 @app.route('/internal', methods=['GET', 'POST'])
 def internal():
     form = QueryForm()
+    error_message = None
     total_waste = None
     total_waste_sum = None
     if form.validate_on_submit():
@@ -58,12 +59,35 @@ def internal():
         anno = form.anno.data
         waste_response = requests.get(f'{FASTAPI_BACKEND_HOST}/total_waste', params={'comune': comune, 'anno': anno})
         sum_response = requests.get(f'{FASTAPI_BACKEND_HOST}/total_waste_sum', params={'comune': comune})
-        if waste_response.ok:
+        print(waste_response.content)
+        print(sum_response.content)
+        if waste_response.status_code == 200:
             total_waste = waste_response.json()
-        if sum_response.ok:
+        else:
+            error_message = 'Error: Unable to fetch waste amount from FastAPI Backend'
+
+        if sum_response.status_code == 200:
             total_waste_sum = sum_response.json()
-    return render_template('internal.html', form=form, total_waste=total_waste, total_waste_sum=total_waste_sum)
+        else:
+            if error_message:
+                error_message += ' & '
+            error_message += 'Error: Unable to fetch total waste sum amount from FastAPI Backend'
+    return render_template('internal.html', form=form, total_waste=total_waste, total_waste_sum=total_waste_sum, error_message=error_message)
+
+        #if waste_response.status_code==200:
+        #    total_waste = waste_response.json()
+        #    
+        #    return render_template('internal.html', form=form, total_waste=total_waste, error_message=error_message)
+        #else:
+        #    error_message = f'Error: Unable to fetch waste amount from FastAPI Backend'
+        #if sum_response.status_code==200:
+        #    total_waste_sum = sum_response.json()
+        #
+        #    return render_template('internal.html', form=form, total_waste_sum=total_waste_sum, error_message=error_message)
+        #else:
+        #    error_message = f'Error: Unable to fetch total_waste amount from FastAPI Backend'
+    #return render_template('internal.html', form=form, error_message = error_message)
 
   
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    app.run(debug=True, host='0.0.0.0', port=5004)
