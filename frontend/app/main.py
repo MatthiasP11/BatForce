@@ -4,21 +4,23 @@ Frontend module for the Flask application.
 This module defines a simple Flask application that serves as the frontend for the project.
 """
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify
 import requests  # Import the requests library to make HTTP requests
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
+from wtforms import StringField, SubmitField, SelectMultipleField, IntegerField
+from wtforms.validators import DataRequired
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your_secret_key'  # Replace with a secure secret key
+app.config['SECRET_KEY'] = 'my_secret_key'  # Replace with a secure secret key
 
 # Configuration for the FastAPI backend URL
-FASTAPI_BACKEND_HOST = 'http://backend'  # Replace with the actual URL of your FastAPI backend
+FASTAPI_BACKEND_HOST = 'http://127.0.0.1:8000'  # Replace with the actual URL of your FastAPI backend
 BACKEND_URL = f'{FASTAPI_BACKEND_HOST}/query/'
 
 
 class QueryForm(FlaskForm):
-    person_name = StringField('Person Name:')
+    comune = StringField('Comune', validators=[DataRequired()])
+    anno = IntegerField('Anno', validators=[DataRequired()])
     submit = SubmitField('Get Birthday from FastAPI Backend')
 
 
@@ -51,34 +53,23 @@ def fetch_date_from_backend():
         return 'Date not available'
 
 
+
 @app.route('/internal', methods=['GET', 'POST'])
 def internal():
-    """
-    Render the internal page.
-
-    Returns:
-        str: Rendered HTML content for the index page.
-    """
     form = QueryForm()
-    error_message = None  # Initialize error message
-
+    total_waste = None
+    total_waste_sum = None
     if form.validate_on_submit():
-        person_name = form.person_name.data
+        comune = form.comune.data
+        anno = form.anno.data
+        waste_response = requests.get(f'{FASTAPI_BACKEND_HOST}/total_waste', params={'comune': comune, 'anno': anno})
+        sum_response = requests.get(f'{FASTAPI_BACKEND_HOST}/total_waste_sum', params={'comune': comune})
+        if waste_response.ok:
+            total_waste = waste_response.json()
+        if sum_response.ok:
+            total_waste_sum = sum_response.json()
+    return render_template('internal.html', form=form, total_waste=total_waste, total_waste_sum=total_waste_sum)
 
-        # Make a GET request to the FastAPI backend
-        fastapi_url = f'{FASTAPI_BACKEND_HOST}/query/{person_name}'
-        response = requests.get(fastapi_url)
-
-        if response.status_code == 200:
-            # Extract and display the result from the FastAPI backend
-            data = response.json()
-            result = data.get('birthday', f'Error: Birthday not available for {person_name}')
-            return render_template('internal.html', form=form, result=result, error_message=error_message)
-        else:
-            error_message = f'Error: Unable to fetch birthday for {person_name} from FastAPI Backend'
-
-    return render_template('internal.html', form=form, result=None, error_message=error_message)
-
-
+  
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=True)
+    app.run(debug=True)
