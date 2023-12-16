@@ -9,14 +9,21 @@
         <p>This is an internal page for interacting with a FastAPI backend.</p>
 
         <!-- WTForms Form to get input from the user -->
-        <form method="POST" action="">
-            {{ form.csrf_token }}
+        
+        <form method="post" action="/internal">
             <div class="form-group">
-                {{ form.person_name.label }}
-                {{ form.person_name(class="form-control", placeholder="Enter person name") }}
+                <label for="comune">Comune:</label>
+                <input type="text" class="form-control" id="comune" name="comune" required>
             </div>
-            {{ form.submit(class="btn btn-primary") }}
+            <div class="form-group">
+                <label for="anno">Anno:</label>
+                <input type="number" class="form-control" id="anno" name="anno" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Get Waste Data</button>
         </form>
+
+          
+    
 
         <!-- Display the result here -->
         <div id="resultContainer" class="mt-3">
