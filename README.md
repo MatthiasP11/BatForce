@@ -192,8 +192,7 @@ Docker Support: Containerized setup for easy deployment and scaling.
 
 ### Usage
 The Flask frontend provides a web interface to interact with the FastAPI backend.
-Users can query birthday information and view waste data analytics.
-
+Users can query the year and town they prefer to see the amount of waste.
 ### Contributing
 Contributions are welcome. Please read the contribution guidelines before submitting pull requests.
 
