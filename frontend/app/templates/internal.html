@@ -4,32 +4,33 @@
 
 {% block content %}
 
-    <div class="container mt-5">
-        <h1>Hello, Internal Page!</h1>
-        <p>This is an internal page for interacting with a FastAPI backend.</p>
-
-        <!-- WTForms Form to get input from the user -->
-        <form method="POST" action="">
-            {{ form.csrf_token }}
-            <div class="form-group">
-                {{ form.person_name.label }}
-                {{ form.person_name(class="form-control", placeholder="Enter person name") }}
-            </div>
-            {{ form.submit(class="btn btn-primary") }}
-        </form>
-
-        <!-- Display the result here -->
-        <div id="resultContainer" class="mt-3">
-            {% if result %}
-                <p>{{ result }}</p>
-            {% endif %}
-            {% if error_message %}
-                <p class="text-danger">{{ error_message }}</p>
-            {% endif %}
+<div class="container mt-5">
+    <h1>Welcome!</h1>
+    <h2>Find the value of total waste (in kg) of each municipality
+        in Italy from 1997 to 2011</h2>
+    <h4>Enter the name of the municipality (first capital letter),
+        and enter a year (1997 to 2011)</h4>
+    
+    <!-- Form for querying Rifiuto data -->
+    <form method="post">
+        <div class="form-group">
+            <label for="comune">Comune:</label>
+            <input type="text" class="form-control" id="comune" name="comune" required>
         </div>
-        
+        <div class="form-group">
+            <label for="anno">Year (1997-2011):</label>
+            <input type="number" class="form-control" id="anno" name="anno">
+        </div>
+        <button type="submit" class="btn btn-primary" name="action" value="specific">Search</button>
+    </form>
 
-    </div>
-
+    <!-- Displaying Rifiuto data -->
+    {% if rifiuto_data %}
+        <h2>Results:</h2>
+        <p>{{ rifiuto_data }}</p>
+    {% else %}
+        <p>No data found. Please check the Comune name or try a different year.</p>
+    {% endif %}
+</div>
 
 {% endblock %}

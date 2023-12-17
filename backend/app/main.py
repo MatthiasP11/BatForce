@@ -1,84 +1,47 @@
-"""
-Backend module for the FastAPI application.
-
-This module defines a FastAPI application that serves
-as the backend for the project.
-"""
-
-from fastapi import FastAPI
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
-from datetime import datetime
 import pandas as pd
+from fastapi import FastAPI, HTTPException
 
+# The following code is responsible for loading data from a CSV file into a pandas DataFrame.
+# It then sets up a FastAPI application with endpoints to access specific data based on query parameters.
 
-from .mymodules.birthdays import return_birthday, print_birthdays_str
+# Load the CSV file
+csv_file_path = '/app/app/filedati.csv'  # Path to the CSV file containing the data
+csv_data = pd.read_csv(csv_file_path, encoding='ISO-8859-1', delimiter=';')  # Loading the CSV data
+csv_data['Anno'] = csv_data['Anno'].astype(int)  # Converting the 'Anno' column to integers for year representation
+csv_data['Comune'] = csv_data['Comune'].astype(str)  # Ensuring the 'Comune' column is of string type
+csv_data['Rifiuto totale (in Kg)'] = csv_data['Rifiuto totale (in Kg)'].astype(str)  # Converting 'Rifiuto totale' to string
 
-app = FastAPI()
+app = FastAPI()  # Initializing the FastAPI app
 
-# Dictionary of birthdays
-birthdays_dictionary = {
-    'Albert Einstein': '03/14/1879',
-    'Benjamin Franklin': '01/17/1706',
-    'Ada Lovelace': '12/10/1815',
-    'Donald Trump': '06/14/1946',
-    'Rowan Atkinson': '01/6/1955'
-}
-
-df = pd.read_csv('/app/app/employees.csv')
-
-@app.get('/csv_show')
-def read_and_return_csv():
-    aux = df['Age'].values
-    return{"Age": str(aux.argmin())}
-
-@app.get('/')
-def read_root():
+@app.get("/rifiuto/{comune}/{anno}")
+def get_rifiuto_totale(comune: str, anno: int):
     """
-    Root endpoint for the backend.
-
-    Returns:
-        dict: A simple greeting.
-    """
-    return {"Hello": "World"}
-
-
-@app.get('/query/{person_name}')
-def read_item(person_name: str):
-    """
-    Endpoint to query birthdays based on person_name.
+    Endpoint to get the total waste (Rifiuto totale in Kg) for a specified 'Comune' (city/town) and 'Anno' (year).
+    The function queries the loaded CSV data to find the matching record.
 
     Args:
-        person_name (str): The name of the person.
+    comune (str): The name of the city or town.
+    anno (int): The year for which the data is required.
 
     Returns:
-        dict: Birthday information for the provided person_name.
+    str: The total waste in kilograms for the specified 'Comune' and 'Anno' or an HTTP 404 error if data is not found.
     """
-    person_name = person_name.title()  # Convert to title case for consistency
-    birthday = birthdays_dictionary.get(person_name)
-    if birthday:
-        return {"person_name": person_name, "birthday": birthday}
-    else:
-        return {"error": "Person not found"}
+    # Filtering data for the specified 'Comune' and 'Anno'
+    data = csv_data[(csv_data['Comune'] == comune) & (csv_data['Anno'] == anno)]
+    
+    # Handling the case where no data is found
+    if data.empty:
+        raise HTTPException(status_code=404, detail="Data not found")
+    
+    return data['Rifiuto totale (in Kg)'].iloc[0]  # Returning the total waste for the specified parameters
 
-
-@app.get('/module/search/{person_name}')
-def read_item_from_module(person_name: str):
-    return {return_birthday(person_name)}
-
-
-@app.get('/module/all')
-def dump_all_birthdays():
-    return {print_birthdays_str()}
-
-
-@app.get('/get-date')
-def get_date():
+@app.get("/")
+def read_root():
     """
-    Endpoint to get the current date.
+    Root endpoint of the API.
 
     Returns:
-        dict: Current date in ISO format.
+    dict: A simple greeting message.
     """
-    current_date = datetime.now().isoformat()
-    return JSONResponse(content={"date": current_date})
+    return {"Hello": "World"}  # A basic response for the root endpoint
+
