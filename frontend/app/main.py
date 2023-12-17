@@ -1,93 +1,50 @@
-"""
-Frontend module for the Flask application.
-
-This module defines a simple Flask application that serves as the frontend for the project.
-"""
-
-from flask import Flask, render_template, request, jsonify
-import requests  # Import the requests library to make HTTP requests
-from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, SelectMultipleField, IntegerField
-from wtforms.validators import DataRequired
+from flask import Flask, render_template, request
+import requests
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'my_secret_key'  # Replace with a secure secret key
+
+# The following code sets up a Flask web application. It includes routes to handle user requests
+# and to interact with a FastAPI backend service. The app also uses templates to render HTML pages.
+
+# Secret key configuration for Flask app
+app.config['SECRET_KEY'] = 'your_secret_key'  # Replace with a secure secret key for session management
 
 # Configuration for the FastAPI backend URL
-FASTAPI_BACKEND_HOST = 'http://backend:80'  # Replace with the actual URL of your FastAPI backend
-BACKEND_URL = f'{FASTAPI_BACKEND_HOST}/'
+FASTAPI_BACKEND_URL = 'http://backend:80'  # URL of the FastAPI backend service, typically set in a docker-compose environment
 
+@app.route('/internal', methods=['GET', 'POST'])
+def internal():
+    """
+    The '/internal' route handles GET and POST requests.
+    On a POST request, it sends a request to the FastAPI backend to retrieve data based on user input.
+    It then renders the 'internal.html' template with the retrieved data.
+    """
+    rifiuto_data = None  # Variable to store data from the backend
 
-class QueryForm(FlaskForm):
-    comune = StringField('Comune', validators=[DataRequired()])
-    anno = IntegerField('Anno', validators=[DataRequired()])
-    
+    # Handling POST request to fetch data
+    if request.method == 'POST':
+        comune = request.form.get('comune')  # Getting 'comune' from form data
+        anno = request.form.get('anno')  # Getting 'anno' (year) from form data
+        if anno:
+            # Making a request to the FastAPI backend
+            response = requests.get(f"{FASTAPI_BACKEND_URL}/rifiuto/{comune}/{anno}")
+        
+            # Checking if the response from backend is successful
+            if response.status_code == 200:
+                rifiuto_data = response.json()  # Parsing the JSON data from the response
 
+    # Rendering the 'internal.html' template with the fetched data
+    return render_template('internal.html', rifiuto_data=rifiuto_data)
 
 @app.route('/')
 def index():
     """
-    Render the index page.
-
-    Returns:
-        str: Rendered HTML content for the index page.
+    The root route ('/') of the application. It simply renders the 'index.html' template.
     """
-    # Fetch the date from the backend
-    date_from_backend = fetch_date_from_backend()
-    return render_template('index.html', date_from_backend=date_from_backend)
+    # Rendering the 'index.html' template
+    return render_template('index.html')  # Ensure 'index.html' exists in the templates directory
 
-def fetch_date_from_backend():
-    backend_url = f'{BACKEND_URL}get-date'  # Updated URL
-    try:
-        response = requests.get(backend_url)
-        response.raise_for_status()
-        return response.json().get('date', 'Date not available')
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching date from backend: {e}")
-        return 'Date not available'
-
-
-
-@app.route('/internal', methods=['GET', 'POST'])
-def internal():
-    form = QueryForm()
-    error_message = None
-    total_waste = None
-    total_waste_sum = None
-    if form.validate_on_submit():
-        comune = form.comune.data
-        anno = form.anno.data
-        waste_response = requests.get(f'{FASTAPI_BACKEND_HOST}/total_waste', params={'comune': comune, 'anno': anno})
-        sum_response = requests.get(f'{FASTAPI_BACKEND_HOST}/total_waste_sum', params={'comune': comune})
-        print(waste_response.content)
-        print(sum_response.content)
-        if waste_response.status_code == 200:
-            total_waste = waste_response.json()
-        else:
-            error_message = 'Error: Unable to fetch waste amount from FastAPI Backend'
-
-        if sum_response.status_code == 200:
-            total_waste_sum = sum_response.json()
-        else:
-            if error_message:
-                error_message += ' & '
-            error_message += 'Error: Unable to fetch total waste sum amount from FastAPI Backend'
-    return render_template('internal.html', form=form, total_waste=total_waste, total_waste_sum=total_waste_sum, error_message=error_message)
-
-        #if waste_response.status_code==200:
-        #    total_waste = waste_response.json()
-        #    
-        #    return render_template('internal.html', form=form, total_waste=total_waste, error_message=error_message)
-        #else:
-        #    error_message = f'Error: Unable to fetch waste amount from FastAPI Backend'
-        #if sum_response.status_code==200:
-        #    total_waste_sum = sum_response.json()
-        #
-        #    return render_template('internal.html', form=form, total_waste_sum=total_waste_sum, error_message=error_message)
-        #else:
-        #    error_message = f'Error: Unable to fetch total_waste amount from FastAPI Backend'
-    #return render_template('internal.html', form=form, error_message = error_message)
-
-  
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5004)
+# Conditional to ensure the script runs only if it's the main program and not imported as a module
+if __name__ == "__main__":
+    # Running the Flask app on host '0.0.0.0' and port 80
+    app.run(host='0.0.0.0', port=80)
