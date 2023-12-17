@@ -19,4 +19,4 @@ EXPOSE 80
 CMD ["python", "app/main.py"]
 
 # Command to keep the container running
-#CMD ["tail", "-f", "/dev/null"]
+CMD ["tail", "-f", "/dev/null"]
