@@ -190,9 +190,7 @@ Data Processing: Analyze waste data from CSV files using Pandas in the FastAPI b
 User Interface: Interactive web interface created with Flask for querying and displaying data.
 Docker Support: Containerized setup for easy deployment and scaling.
 
-The program’s features are:
-1. ability to check what the user has written as the name of a “Comune” and a year(”Anno”) and get the respective “Rifiuto totale (in Kg)”,
-2. ability to check what the user has written as the name of a  “Comune” and get the sum of all “Rifiuto totale (in Kg)” throughout the available years (”Anno”) where “Comune” appears.
+The program, through the data entered by the user in the 'Comune' (Municipality) and 'Year' text boxes, sends a result showing, on the screen, the value of the "Total waste (in Kg)" for the municipality and year chosen by the user.
 
 ### Usage
 The Flask frontend provides a web interface to interact with the FastAPI backend.
