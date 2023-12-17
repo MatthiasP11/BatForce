@@ -185,7 +185,7 @@ Now you can manage the lifecycle of your Docker containers more flexibly.
 
 Now, the additional Python modules are installed in the running container, and you've performed these actions directly from the VS Code terminal. If these changes are intended for production, consider updating the `requirements.txt` file and rebuilding the Docker container.
 
-### Features
+## Features
 Data Processing: Analyze waste data from CSV files using Pandas in the FastAPI backend.
 User Interface: Interactive web interface created with Flask for querying and displaying data.
 Docker Support: Containerized setup for easy deployment and scaling.
