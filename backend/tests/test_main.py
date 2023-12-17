@@ -2,9 +2,11 @@ import os
 import sys
 from fastapi.testclient import TestClient
 
+# Add the project root to the sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from app.main import app  
+from app.main import app  # Now you can do the relative import
 
+# Initialize the TestClient for FastAPI application
 client = TestClient(app)
 
 def test_read_main():
