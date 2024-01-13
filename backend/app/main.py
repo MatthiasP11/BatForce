@@ -1,47 +1,96 @@
+"""
+Backend module for the FastAPI application.
+
+This module defines a FastAPI application that serves
+as the backend for the project.
+"""
+
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+from datetime import datetime
 import pandas as pd
-from fastapi import FastAPI, HTTPException
 
-# The following code is responsible for loading data from a CSV file into a pandas DataFrame.
-# It then sets up a FastAPI application with endpoints to access specific data based on query parameters.
+from .mymodules.birthdays import total_waste
+from .mymodules.birthdays import total_waste_all_years
+from .mymodules.birthdays import find_municipalities_by_waste
 
-# Load the CSV file
-csv_file_path = '/app/app/filedati.csv'  # Path to the CSV file containing the data
-csv_data = pd.read_csv(csv_file_path, encoding='ISO-8859-1', delimiter=';')  # Loading the CSV data
-csv_data['Anno'] = csv_data['Anno'].astype(int)  # Converting the 'Anno' column to integers for year representation
-csv_data['Comune'] = csv_data['Comune'].astype(str)  # Ensuring the 'Comune' column is of string type
-csv_data['Rifiuto totale (in Kg)'] = csv_data['Rifiuto totale (in Kg)'].astype(str)  # Converting 'Rifiuto totale' to string
 
-app = FastAPI()  # Initializing the FastAPI app
+app = FastAPI()
 
-@app.get("/rifiuto/{comune}/{anno}")
-def get_rifiuto_totale(comune: str, anno: int):
-    """
-    Endpoint to get the total waste (Rifiuto totale in Kg) for a specified 'Comune' (city/town) and 'Anno' (year).
-    The function queries the loaded CSV data to find the matching record.
 
-    Args:
-    comune (str): The name of the city or town.
-    anno (int): The year for which the data is required.
+df = pd.read_csv('/app/app/filedati.csv')
 
-    Returns:
-    str: The total waste in kilograms for the specified 'Comune' and 'Anno' or an HTTP 404 error if data is not found.
-    """
-    # Filtering data for the specified 'Comune' and 'Anno'
-    data = csv_data[(csv_data['Comune'] == comune) & (csv_data['Anno'] == anno)]
-    
-    # Handling the case where no data is found
-    if data.empty:
-        raise HTTPException(status_code=404, detail="Data not found")
-    
-    return data['Rifiuto totale (in Kg)'].iloc[0]  # Returning the total waste for the specified parameters
-
-@app.get("/")
+@app.get('/')
 def read_root():
     """
-    Root endpoint of the API.
+    Root endpoint for the backend.
 
     Returns:
-    dict: A simple greeting message.
+        dict: A simple greeting.
     """
-    return {"Hello": "World"}  # A basic response for the root endpoint
+    return {"Hello": "World"}
 
+# function 1 - total_waste (comune, year)
+@app.get('/total_waste/{comune}/{year}')
+def get_total_waste(comune: str, year: int):
+    """
+    Endpoint to retrieve total waste for a given comune and year.
+
+    Args:
+        comune (str): Name of the Comune
+        year (int): Year of interest
+
+    Returns:
+        dict: Total waste in Kg or a message if not found
+    """
+    # Assuming the CSV file path is fixed, you can hardcode or configure it here
+    csv_file_path = '/app/app/filedati.csv'
+    waste = total_waste(comune, year, csv_file_path)
+    return {"comune": comune, "year": year, "total_waste": waste}
+
+# function 2
+@app.get('/total_waste_all_years/{comune}')
+def get_total_waste_all_years(comune: str):
+    """
+    Endpoint to retrieve total waste for all years for a given comune.
+
+    Args:
+        comune (str): Name of the Comune
+
+    Returns:
+        dict: Total waste in Kg for all years or a message if not found
+    """
+    csv_file_path = '/app/app/filedati.csv'
+    waste_data = total_waste_all_years(comune, csv_file_path)
+    return {"comune": comune, "total_waste_data": waste_data}
+
+# function 3
+@app.get('/find_municipalities_by_waste/{year}')
+def get_find_municipalities_by_waste(year: int):
+    """
+    Endpoint to retrieve the municipalities with the highest and lowest waste per capita for a given year.
+
+    Args:
+        year (int): Year of interest
+
+    Returns:
+        JSONResponse: Contains the municipalities with the highest and lowest waste per capita.
+    """
+    csv_file_path = '/app/app/filedati.csv'
+    highest, lowest = find_municipalities_by_waste(csv_file_path, year)
+    return JSONResponse(content={"Year": year, "Highest Waste Per Capita": highest, "Lowest Waste Per Capita": lowest})
+
+
+
+
+
+@app.get('/get-date')
+def get_date():
+    """
+    Endpoint to get the current date.
+
+    Returns:
+        dict: Current date in ISO format.
+    """
+    current_date = datetime.now().isoformat()
+    return JSONResponse(content={"date": current_date})

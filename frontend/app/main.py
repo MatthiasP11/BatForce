@@ -1,50 +1,124 @@
+"""
+Frontend module for the Flask application.
+
+This module defines a simple Flask application that serves as the frontend for the project.
+"""
+
 from flask import Flask, render_template, request
-import requests
+import requests  # Import the requests library to make HTTP requests
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
 
 app = Flask(__name__)
-
-# The following code sets up a Flask web application. It includes routes to handle user requests
-# and to interact with a FastAPI backend service. The app also uses templates to render HTML pages.
-
-# Secret key configuration for Flask app
-app.config['SECRET_KEY'] = 'your_secret_key'  # Replace with a secure secret key for session management
+app.config['SECRET_KEY'] = 'your_secret_key'  # Replace with a secure secret key
 
 # Configuration for the FastAPI backend URL
-FASTAPI_BACKEND_URL = 'http://backend:80'  # URL of the FastAPI backend service, typically set in a docker-compose environment
+FASTAPI_BACKEND_HOST = 'http://backend'  # Replace with the actual URL of your FastAPI backend
+BACKEND_URL = f'{FASTAPI_BACKEND_HOST}/query/'
 
-@app.route('/internal', methods=['GET', 'POST'])
-def internal():
-    """
-    The '/internal' route handles GET and POST requests.
-    On a POST request, it sends a request to the FastAPI backend to retrieve data based on user input.
-    It then renders the 'internal.html' template with the retrieved data.
-    """
-    rifiuto_data = None  # Variable to store data from the backend
+class QueryForm(FlaskForm):
+    person_name = StringField('Person Name:')
+    submit = SubmitField('Get Birthday from FastAPI Backend')
 
-    # Handling POST request to fetch data
-    if request.method == 'POST':
-        comune = request.form.get('comune')  # Getting 'comune' from form data
-        anno = request.form.get('anno')  # Getting 'anno' (year) from form data
-        if anno:
-            # Making a request to the FastAPI backend
-            response = requests.get(f"{FASTAPI_BACKEND_URL}/rifiuto/{comune}/{anno}")
-        
-            # Checking if the response from backend is successful
-            if response.status_code == 200:
-                rifiuto_data = response.json()  # Parsing the JSON data from the response
-
-    # Rendering the 'internal.html' template with the fetched data
-    return render_template('internal.html', rifiuto_data=rifiuto_data)
+    comune_name = StringField('Comune Name:')
+    submit1 = SubmitField('Get Comune from FastAPI Backend')
 
 @app.route('/')
 def index():
     """
-    The root route ('/') of the application. It simply renders the 'index.html' template.
-    """
-    # Rendering the 'index.html' template
-    return render_template('index.html')  # Ensure 'index.html' exists in the templates directory
+    Render the index page.
 
-# Conditional to ensure the script runs only if it's the main program and not imported as a module
-if __name__ == "__main__":
-    # Running the Flask app on host '0.0.0.0' and port 80
-    app.run(host='0.0.0.0', port=80)
+    Returns:
+        str: Rendered HTML content for the index page.
+    """
+    # Fetch the date from the backend
+    date_from_backend = fetch_date_from_backend()
+    return render_template('index.html', date_from_backend=date_from_backend)
+
+def fetch_date_from_backend():
+    """
+    Function to fetch the current date from the backend.
+
+    Returns:
+        str: Current date in ISO format.
+    """
+    backend_url = 'http://backend/get-date'  # Adjust the URL based on your backend configuration
+    try:
+        response = requests.get(backend_url)
+        response.raise_for_status()  # Raise an HTTPError for bad responses
+        return response.json().get('date', 'Date not available')
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching date from backend: {e}")
+        return 'Date not available'
+
+
+@app.route('/internal', methods=['GET', 'POST'])
+def internal():
+    """
+    Render the internal page.
+
+    Returns:
+        str: Rendered HTML content for the index page.
+    """
+    form = QueryForm()
+    error_message = None  # Initialize error message
+
+    if form.validate_on_submit():
+        person_name = form.person_name.data
+
+        # Make a GET request to the FastAPI backend
+        fastapi_url = f'{FASTAPI_BACKEND_HOST}/query/{person_name}'
+        response = requests.get(fastapi_url)
+
+        if response.status_code == 200:
+            # Extract and display the result from the FastAPI backend
+            data = response.json()
+            result = data.get('birthday', f'Error: Birthday not available for {person_name}')
+            return render_template('internal.html', form=form, result=result, error_message=error_message)
+        else:
+            error_message = f'Error: Unable to fetch birthday for {person_name} from FastAPI Backend'
+
+    return render_template('internal.html', form=form, result=None, error_message=error_message)
+
+#//////////////
+
+
+
+
+@app.route('/internal1', methods=['GET', 'POST'])
+def internal1():
+    form = QueryForm()
+    
+    error_message = None  # Initialize error message
+
+    if form.validate_on_submit():
+        comune_name = form.comune.data
+
+        # Make a GET request to the FastAPI backend with the comune name
+        fastapi_url = f'{FASTAPI_BACKEND_HOST}/query_waste/{comune_name}'
+        try:
+            response = requests.get(fastapi_url)
+            response.raise_for_status()  # Raise an HTTPError for bad responses (4xx and 5xx)
+
+            # Extract and display the result from the FastAPI backend
+            data = response.json()
+            waste_amount = data.get('waste_amount', f'Error: Waste amount not available for {comune_name}')
+            return render_template('internal.html', form=form, waste_amount=waste_amount, error_message=error_message)
+
+        except requests.exceptions.HTTPError as errh:
+            error_message = f"HTTP Error: {errh}"
+
+        except requests.exceptions.RequestException as err:
+            error_message = f"Error: {err}"
+
+    return render_template('internal.html', form=form, waste_amount=None, error_message=error_message)
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=80, debug=True)
