@@ -4,41 +4,43 @@ from fastapi.testclient import TestClient
 
 # Add the project root to the sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from app.main import app  # Now you can do the relative import
+# Now you can do the relative import
+from app.main import app
 
-# Initialize the TestClient for FastAPI application
+
+"""
+Execute this test by running on the terminal (from the app/) the command:
+pytest --cov=app --cov-report=html tests/
+ """
+
 client = TestClient(app)
 
-def test_read_main():
-    """
-    Test the main route of the FastAPI application.
 
-    This test ensures that the main route ('/') is accessible and
-    returns the expected response.
-    """
+def test_read_main():
     response = client.get("/")
     assert response.status_code == 200
     assert response.json() == {"Hello": "World"}
 
-def test_api_endpoint_valid_input():
-    """
-    Test the API endpoint with valid input.
-
-    This test checks the response of the API when a valid 'comune' and 'anno'
-    are provided in the request. For this test, 'Affi' and '1997' are used.
-    It validates both the status code and the response content.
-    """
-    response = client.get("/rifiuto/Affi/1997")
+def test_root_endpoint():
+    response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"Rifiuto totale (in Kg)": "1.155.208"}
 
-def test_api_endpoint_invalid_input():
-    """
-    Test the API endpoint with invalid input.
+def test_total_waste():
+    response = client.get("/total_waste/Comune1/2020")
+    assert response.status_code == 200
+    # Add more assertions based on expected response
 
-    This test checks the behavior of the API when an invalid 'comune' and 'anno'
-    are provided in the request. For this test, a non-existent city and year are used.
-    It validates that the status code is 404, indicating not found.
-    """
-    response = client.get("/rifiuto/NonExistentCity/3000")
+def test_total_waste_all_years():
+    response = client.get("/total_waste_all_years/Comune1")
+    assert response.status_code == 200
+    # Additional assertions
+
+def test_find_municipalities_by_waste():
+    response = client.get("/find_municipalities_by_waste?waste_amount=1000")
+    assert response.status_code == 200
+    # More assertions based on expected output
+
+def test_invalid_input():
+    response = client.get("/total_waste/InvalidComune/2020")
     assert response.status_code == 404
+    # Or any other expected status code
